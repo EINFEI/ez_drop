@@ -4,11 +4,13 @@ import type { ServerWebSocket } from "bun";
 export interface Peer {
   socket: ServerWebSocket<unknown>;
   peerId: string;
-  name: string;
+  deviceName: string;
+  displayName: string;
   uuid: string;
 }
 
 export interface WsData {
-  userAgent: string;
+  deviceName: string;
+  displayName: string;
   uuid: string;
 }

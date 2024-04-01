@@ -1,18 +1,24 @@
 import type { ServerWebSocket } from "bun";
 import type { Peer, WsData } from "./src/core/core";
 import * as roomsHandler from "./src/core/roomsHandler";
+import * as O from "fp-ts/Option";
+import * as R from "ramda";
+import { pipe } from "fp-ts/lib/function";
 
-let rooms: Map<String, Peer[]> = new Map();
+import { UAParser } from "ua-parser-js";
+import { faker } from "@faker-js/faker";
+
+let rooms: Map<string, Peer[]> = new Map();
 
 Bun.serve({
   port: 3000,
   hostname: "127.0.0.1",
   fetch(req, server) {
     // upgrade the request to a WebSocket
-    console.log(rooms);
 
     const data: WsData = {
-      userAgent: req.headers.get("user-agent") ?? "",
+      deviceName: getDeviceName(req.headers.get("user-agent")),
+      displayName: faker.internet.displayName(),
       uuid: crypto.randomUUID(),
     };
 
@@ -25,7 +31,7 @@ Bun.serve({
     message,
     // open,
     close,
-    drain(ws) {},
+    // drain,
   },
 });
 
@@ -48,17 +54,30 @@ function message(ws: ServerWebSocket<unknown>, message: string) {
 function close(ws: ServerWebSocket, code: number, message: string) {
   let wsData = ws.data as unknown as WsData;
   let uuid = wsData.uuid;
-  let ip = ws.remoteAddress;
+  let ip = roomsHandler.getIP(ws);
   let room = rooms.get(ip);
 
-  if (room) {
-    let newRoom = room.filter((peer) => peer.uuid != uuid);
-    newRoom.length == 0
-      ? rooms.delete(ip)
-      : rooms.set(ws.remoteAddress, newRoom);
-
-    roomsHandler.notifyPeer(rooms)(ws);
-  }
+  pipe(
+    O.fromNullable(room),
+    O.map((room) => room.filter((peer) => peer.uuid != uuid)),
+    O.map((peers) => {
+      console.log(peers);
+      return peers;
+    }),
+    O.map((newRoom) =>
+      R.ifElse(
+        () => R.isEmpty(newRoom),
+        () => rooms.delete(ip),
+        () => rooms.set(ws.remoteAddress, newRoom)
+      )()
+    )
+  );
+  roomsHandler.notifyPeer(rooms)(ws);
 }
 
-//   let name = ws.data;
+function getDeviceName(userAgent: string | null) {
+  const uap = new UAParser(userAgent ?? "");
+  const os = uap.getOS().name;
+  const browser = uap.getBrowser().name;
+  return `${browser}-${os}`;
+}

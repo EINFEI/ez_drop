@@ -9,6 +9,11 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "fp-ts": "^2.16.5"
+    "@faker-js/faker": "^8.4.1",
+    "@types/ramda": "^0.29.11",
+    "@types/ua-parser-js": "^0.7.39",
+    "fp-ts": "^2.16.5",
+    "ramda": "^0.29.1",
+    "ua-parser-js": "^1.0.37"
   }
 }
