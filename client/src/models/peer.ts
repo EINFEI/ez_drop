@@ -1,6 +1,7 @@
 // type Room ;
 export interface PeerModel {
   peerId: string;
-  name: string;
+  deviceName: string;
+  displayName: string;
   uuid: string;
 }

@@ -14,23 +14,12 @@ export const usePeer = () => {
     peer.on("connection", (conn) => {
       let bufferChunks: Uint8Array[] = [];
       let receiveTimes = 0;
-      conn.on("data", (data) => {
-        // console.log(data);
-      });
       conn.on("open", () => {
         conn.send("hello!");
       });
       conn.on("data", (data) => {
-        let fileData = data as {
-          file: Uint8Array;
-          filetype: string;
-          filename: string;
-          action: string;
-          hasNext: boolean;
-          total: number;
-          index: number;
-        };
-        let { file, filetype, filename } = fileData;
+        const fileData = data as receiveData;
+        const { file, filetype, filename } = fileData;
         switch (fileData.action) {
           case actionType.part:
             bufferChunks[fileData.index] = file;
@@ -38,11 +27,12 @@ export const usePeer = () => {
 
             receiveTimes++;
             if (receiveTimes == fileData.total) {
-              let newfile = new File(bufferChunks, filename, {
+              const newfile = new File(bufferChunks, filename, {
                 type: filetype,
               });
-              downloadFile(newfile);
+
               // Clear the bufferChunks array for the next file
+              downloadFile(newfile);
               bufferChunks = [];
               receiveTimes = 0;
             }
