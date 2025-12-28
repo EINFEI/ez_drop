@@ -10,11 +10,8 @@ import (
 
 // Define the global variables
 type Config struct {
-	Cors        []string `mapstructure:"cors"`
-	Port        string   `mapstructure:"port"`
-	CertFile    string   `mapstructure:"cert_file"`
-	KeyFile     string   `mapstructure:"key_file"`
-	EnableHTTPS bool     `mapstructure:"enable_https"`
+	Cors []string `mapstructure:"cors"`
+	Port string   `mapstructure:"port"`
 }
 
 var AppConfig Config

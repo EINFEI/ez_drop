@@ -43,14 +43,8 @@ func main() {
 	fmt.Println("Listening on port", AppConfig.Port)
 
 	var err error
-	if AppConfig.EnableHTTPS {
-		fmt.Println("Using HTTPS with cert:", AppConfig.CertFile, "key:", AppConfig.KeyFile)
-		err = http.ListenAndServeTLS(fmt.Sprintf(":%s", AppConfig.Port), AppConfig.CertFile, AppConfig.KeyFile, nil)
-	} else {
-		fmt.Println("Using HTTP (HTTPS disabled)")
-		err = http.ListenAndServe(fmt.Sprintf(":%s", AppConfig.Port), nil)
-	}
 
+	err = http.ListenAndServe(fmt.Sprintf(":%s", AppConfig.Port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
