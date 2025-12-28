@@ -30,3 +30,5 @@ config.yaml
 # Editor/IDE
 # .idea/
 # .vscode/
+
+build/
