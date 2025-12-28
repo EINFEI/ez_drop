@@ -7,11 +7,19 @@ export const useWs = (peer: Peer | undefined) => {
   const wsRef = useRef<WebSocket>();
 
   useEffect(() => {
-    wsRef.current = new WebSocket("ws://localhost:3000");
+    const wsPath = import.meta.env.VITE_WS_PATH || "localhost:3000";
+    wsRef.current = new WebSocket(wsPath);
     let ws = wsRef.current;
 
     ws.onclose = () => {
       console.log("close connection");
+      const timer = setInterval(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          ws = new WebSocket(wsPath);
+        } else {
+          clearInterval(timer);
+        }
+      }, 1000);
       setDevices([]);
     };
 
