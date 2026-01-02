@@ -165,7 +165,6 @@ func notifyPeers(peerList []*Peer) {
 			log.Printf("Error sending message to peer %s: %v", peer.UUID, err)
 			// Consider closing the connection if send fails consistently
 			peer.Conn.Close()
-			closeHandler(peer)
 		}
 	}
 }
