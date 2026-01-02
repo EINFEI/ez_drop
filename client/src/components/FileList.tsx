@@ -3,16 +3,20 @@ import {
   Button,
   Card,
   CardBody,
+  CardFooter,
   CardHeader,
   CloseButton,
+  GridItem,
   Icon,
   Image,
-  Wrap,
-  WrapItem,
+  SimpleGrid,
   Text,
+  Tooltip,
+  VStack,
 } from "@chakra-ui/react";
 import { FC, useEffect, useRef } from "react";
 import { FaFileAlt } from "react-icons/fa";
+import { formatBytes } from "../utlis/formatBytes";
 
 export interface FileListProp {
   files: File[] | undefined;
@@ -36,7 +40,33 @@ export const FileList: FC<FileListProp> = (props) => {
     }
   };
   return (
-    <>
+    <Box w="100%">
+      <Box
+        p={{ base: 2, md: 8 }} // Changed m to p for internal spacing
+        w="100%" // Ensure full width for proper right alignment
+        display="flex"
+        justifyContent="end"
+      >
+        <Button
+          size={{ base: "sm", md: "md" }}
+          onClick={() => setFiles(undefined)}
+        >
+          Clear
+        </Button>
+        <Button
+          size={{ base: "sm", md: "md" }}
+          mx={2}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Upload File
+        </Button>
+        <Button
+          size={{ base: "sm", md: "md" }}
+          onClick={() => folderInputRef.current?.click()}
+        >
+          Upload Folder
+        </Button>
+      </Box>
       <input
         ref={fileInputRef}
         type="file"
@@ -50,40 +80,30 @@ export const FileList: FC<FileListProp> = (props) => {
         type="file"
         style={{ display: "none" }}
       />
-
-      <Box sx={{ m: 8, display: "flex", justifyContent: "end" }}>
-        <Button onClick={() => setFiles(undefined)}>Clear</Button>
-        <Button mx={2} onClick={() => fileInputRef.current?.click()}>
-          Upload File
-        </Button>
-        <Button onClick={() => folderInputRef.current?.click()}>
-          Upload Folder
-        </Button>
-      </Box>
-      {files ? (
-        <Wrap spacing={5} sx={{ mt: 20, px: 8 }}>
+      {files && files.length > 0 ? (
+        <SimpleGrid
+          columns={{ base: 2, sm: 3, md: 4, lg: 5 }}
+          spacing={{ base: 2, md: 5 }}
+          p={{ base: 2, md: 8 }} // Changed mt to p
+        >
           {Array.from(files).map((file, index) => {
-            //   const reader = new FileReader();
             return (
-              <WrapItem
-                key={index}
-                sx={{
-                  width: "20%",
-
-                  justifyContent: "center",
-                }}
-              >
-                <Card key={index}>
+              <GridItem key={index}>
+                <Card>
                   <CardHeader
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
                   >
-                    <Text fontSize="xs" overflow="hidden">
-                      {file.name}
-                    </Text>
-
+                    <Tooltip label={file.name}>
+                      <Text
+                        isTruncated
+                        maxW={{ base: "80px", md: "150px" }}
+                        fontSize="xs"
+                      >
+                        {file.name}
+                      </Text>
+                    </Tooltip>
                     <CloseButton
                       onClick={() => {
                         setFiles((f) => f?.filter((_, i) => i !== index));
@@ -91,24 +111,42 @@ export const FileList: FC<FileListProp> = (props) => {
                       size="sm"
                     />
                   </CardHeader>
-
-                  <CardBody sx={{ height: 1 }}>
+                  <CardBody
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    height={{ base: "5rem", md: "10rem" }}
+                  >
                     {file.type.includes("image") ? (
-                      <Image src={URL.createObjectURL(file)}></Image>
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        maxH="100%"
+                        maxW="100%"
+                      ></Image>
                     ) : (
-                      <Icon as={FaFileAlt} boxSize={"50"}></Icon>
+                      <Icon as={FaFileAlt} boxSize="50px" color="gray.500" />
                     )}
                   </CardBody>
+                  <CardFooter>
+                    <Text fontSize="xs" color="gray.500">
+                      {formatBytes(file.size)}
+                    </Text>
+                  </CardFooter>
                 </Card>
-              </WrapItem>
+              </GridItem>
             );
           })}
-        </Wrap>
+        </SimpleGrid>
       ) : (
-        <Text fontSize={"4xl"} style={{ margin: "auto" }}>
-          Drop Here
-        </Text>
+        <VStack w="100%">
+          <Text fontSize={{ base: "lg", md: "2xl" }} color="gray.500">
+            Drop your files here
+          </Text>
+          <Text fontSize={{ base: "sm", md: "md" }} color="gray.400">
+            or click "Upload File" to select files
+          </Text>
+        </VStack>
       )}
-    </>
+    </Box>
   );
 };

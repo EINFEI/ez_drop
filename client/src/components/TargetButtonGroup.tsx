@@ -1,16 +1,28 @@
-import { Box, Button, Text } from "@chakra-ui/react";
-import { FC } from "react";
-import { PeerModel } from "../models/peer";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CircularProgress,
+  Heading,
+  SimpleGrid,
+  Text,
+  Tooltip,
+  VStack,
+} from "@chakra-ui/react";
 import Peer from "peerjs";
-import { ActionType } from "../models/receiveData";
+import { FC } from "react";
+import { FaPaperPlane } from "react-icons/fa";
+import { PeerModel } from "../models/peer";
 
 type PeerListProps = {
   rooms: PeerModel[] | undefined;
   peer: Peer | undefined;
   handleSendFile: (peerId: string) => void;
   sendingPeers: string[];
-  progress: number;
-  sendingStatus: ActionType;
+  files: File[] | undefined;
 };
 
 export const TargetButtonGroup: FC<PeerListProps> = ({
@@ -18,30 +30,53 @@ export const TargetButtonGroup: FC<PeerListProps> = ({
   peer,
   handleSendFile,
   sendingPeers,
-  progress,
-  sendingStatus,
+  files,
 }) => {
-  if (!rooms || !peer) return <></>;
+  if (!rooms || !peer) return null;
 
   const filteredRooms = rooms.filter((p) => p.peerId !== peer?.id);
-  const loadingText =
-    sendingStatus === ActionType.sendRequest
-      ? `Waiting for confirmation...`
-      : `Sending... ${Math.floor(progress * 100)}%`;
-
+  const loadingText = `Waiting...`;
   return (
-    <Box mb={8}>
-      {filteredRooms.map((p) => (
-        <Button
-          mx={2}
-          onClick={() => handleSendFile(p.peerId)}
-          key={p.uuid}
-          isLoading={sendingPeers.includes(p.peerId)}
-          loadingText={loadingText}
-        >
-          <Text>{`${p.displayName} ${p.deviceName}`}</Text>
-        </Button>
-      ))}
+    <Box w="100%">
+      <Heading as="h2" size={{ base: "md", md: "lg" }} mb={2}>
+        Available Devices
+      </Heading>
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} spacing={5}>
+        {filteredRooms.map((p) => (
+          <Card key={p.uuid} variant="outline">
+            <CardBody>
+              <VStack>
+                <Avatar name={p.displayName} />
+                <Text fontWeight="bold">{p.displayName}</Text>
+                <Text fontSize="sm" color="gray.500">
+                  {p.deviceName}
+                </Text>
+              </VStack>
+            </CardBody>
+            <CardFooter>
+              <Tooltip
+                label={!files ? "Please select a file to send" : "Send file"}
+              >
+                <Box w="100%">
+                  <Button
+                    w="100%"
+                    leftIcon={<FaPaperPlane />}
+                    onClick={() => handleSendFile(p.peerId)}
+                    isLoading={sendingPeers.includes(p.peerId)}
+                    loadingText={loadingText}
+                    spinner={
+                      <CircularProgress isIndeterminate={true} size="24px" />
+                    }
+                    isDisabled={!files}
+                  >
+                    Send
+                  </Button>
+                </Box>
+              </Tooltip>
+            </CardFooter>
+          </Card>
+        ))}
+      </SimpleGrid>
     </Box>
   );
 };
